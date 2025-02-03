@@ -1,6 +1,6 @@
 package com.example.tareafinalcompose
 
-import ConsultScreen
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,8 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.tareafinalcompose.data.FirebaseAuthManager
+import com.example.tareafinalcompose.pantallas.DogScreen
 import com.example.tareafinalcompose.pantallas.HomeScreen
-import com.example.tareafinalcompose.pantallas.PokemonListScreen
+
 import com.example.tareafinalcompose.pantallas.RegisterScreen
 import com.example.tareafinalcompose.pantallas.SignInScreen
 import com.example.tareafinalcompose.ui.theme.TareaFinalComposeTheme
@@ -46,20 +47,18 @@ class MainActivity : ComponentActivity() {
                 composable("home") {
                     HomeScreen(navController)
                 }
-
-                // Pantalla de consulta (ConsultScreen)
-                composable("consult") {
-                    ConsultScreen(navController)
+                composable("dogScreen") {
+                    DogScreen(navController)  // Pantalla donde se muestra la imagen del perro
                 }
 
-                // Otra pantalla que puedes necesitar (PokemonListScreen por ejemplo)
-                composable("pokemonList") {
-                    PokemonListScreen(navController)
+
+
+
                 }
             }
         }
     }
-}
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

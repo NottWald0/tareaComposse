@@ -55,7 +55,7 @@ fun HomeScreen(navController: NavController) {
 
                 Button(onClick = {
                     // Redirigir a la pantalla de consulta
-                    navController.navigate("consult")
+                    navController.navigate("DogScreen")
                 }) {
                     Text("Realizar consulta")
                 }

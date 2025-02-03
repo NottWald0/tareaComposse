@@ -51,6 +51,8 @@ android {
 }
 
 dependencies {
+    implementation ("io.coil-kt:coil-compose:2.3.0") // Versión más reciente disponible
+
     // Firebase y dependencias relacionadas
     implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("com.google.firebase:firebase-auth")

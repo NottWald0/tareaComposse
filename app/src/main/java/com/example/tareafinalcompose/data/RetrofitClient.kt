@@ -3,13 +3,16 @@ package com.example.tareafinalcompose.data
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitClient {
-    private const val BASE_URL = "https://pokeapi.co/api/v2/"
+object RetrofitInstance {
+    private const val BASE_URL = "https://api.thedogapi.com/"
 
-    val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    val pokeApiService: PokeApiService = retrofit.create(PokeApiService::class.java)
+    val dogApiService: DogApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(DogApiService::class.java)
+    }
 }
+
+
