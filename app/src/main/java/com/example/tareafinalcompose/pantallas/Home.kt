@@ -1,39 +1,32 @@
 package com.example.tareafinalcompose.pantallas
 
 import FirebaseFirestoreManager
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, onSignOut: () -> Unit, onConsultationDone: () -> Unit) {
     val firestoreManager = FirebaseFirestoreManager()
     val user = firestoreManager.getCurrentUser() // Obtener usuario actual
 
-    val coroutineScope = rememberCoroutineScope()
+    var userHasConsulted by remember { mutableStateOf(false) } // Estado para controlar si el usuario ya consultó
 
     // Si el usuario no está autenticado, redirigir a la pantalla de registro
     LaunchedEffect(user?.uid) {
         if (user == null) {
-            navController.navigate("signIn")
+            navController.navigate("signIn") {
+                popUpTo("home") { inclusive = true } // Limpiar la pila de navegación para que no se pueda volver a la pantalla de inicio
+            }
         }
     }
 
@@ -46,7 +39,10 @@ fun HomeScreen(navController: NavController) {
                 Button(onClick = {
                     // Cerrar sesión y redirigir a la pantalla de inicio de sesión
                     firestoreManager.signOut()
-                    navController.navigate("signIn")
+                    onSignOut() // Ejecuta la función onSignOut pasada como parámetro
+                    navController.navigate("signIn") {
+                        popUpTo("home") { inclusive = true } // Limpiar la pila de navegación para que no se pueda volver a la pantalla de inicio
+                    }
                 }) {
                     Text("Cerrar sesión")
                 }
@@ -54,12 +50,21 @@ fun HomeScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = {
-                    // Redirigir a la pantalla de consulta
+                    // Redirigir a la pantalla de consulta (DogScreen)
                     navController.navigate("DogScreen")
+                    userHasConsulted = true // Cambiar el estado cuando se hace la consulta
                 }) {
                     Text("Realizar consulta")
                 }
             }
         }
+    }
+
+    // Resetear el estado de consulta al regresar a Home
+    LaunchedEffect(navController.currentBackStackEntry) {
+        if (userHasConsulted) {
+            onConsultationDone()  // Marca que la consulta fue realizada
+        }
+        userHasConsulted = false // Resetear el estado después de la consulta
     }
 }

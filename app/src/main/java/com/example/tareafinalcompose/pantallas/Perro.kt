@@ -14,15 +14,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.tareafinalcompose.data.RetrofitInstance
 import kotlinx.coroutines.launch
 
 @Composable
-fun DogScreen(navController: NavController) {
+fun DogScreen(navController: NavController, onConsultationDone: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val dogImageUrl = remember { mutableStateOf("") }
 
@@ -33,6 +31,7 @@ fun DogScreen(navController: NavController) {
                 val response = RetrofitInstance.dogApiService.getRandomDog()
                 if (response.isSuccessful) {
                     dogImageUrl.value = response.body()?.firstOrNull()?.url ?: ""
+                    onConsultationDone()  // Marca que el usuario ha hecho la consulta cuando la imagen se carga
                 }
             } catch (e: Exception) {
                 dogImageUrl.value = ""
