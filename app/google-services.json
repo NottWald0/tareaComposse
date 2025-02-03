@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1095033711781",
+    "project_id": "proeyctofinalcompose",
+    "storage_bucket": "proeyctofinalcompose.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1095033711781:android:4dc6352f1d712b8a62714c",
+        "android_client_info": {
+          "package_name": "com.example.tareafinalcompose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLFj8XiPhp2fRMYr7C22VsmH3PMjyjFKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
