@@ -28,32 +28,12 @@ fun HomeScreen(navController: NavController) {
     val firestoreManager = FirebaseFirestoreManager()
     val user = firestoreManager.getCurrentUser() // Obtener usuario actual
 
-    var accessCount by remember { mutableStateOf(0L) }
-    var lastAccessDate by remember { mutableStateOf(0L) }
-
     val coroutineScope = rememberCoroutineScope()
 
-    // Obtener datos de acceso del usuario actual y actualizar los accesos
+    // Si el usuario no está autenticado, redirigir a la pantalla de registro
     LaunchedEffect(user?.uid) {
-        user?.uid?.let {
-            // Si el usuario ya está registrado, actualizamos el contador de accesos
-            val data = firestoreManager.getUserAccessData(it)
-            if (data != null) {
-                accessCount = data.first
-                lastAccessDate = data.second
-            }
-
-            val updateSuccess = firestoreManager.updateUserAccess(it)
-            if (updateSuccess) {
-                val updatedData = firestoreManager.getUserAccessData(it)
-                if (updatedData != null) {
-                    accessCount = updatedData.first
-                    lastAccessDate = updatedData.second
-                }
-            }
-        } ?: run {
-            // Si el usuario no está autenticado, redirigimos a la pantalla de registro
-            navController.navigate("register")
+        if (user == null) {
+            navController.navigate("signIn")
         }
     }
 
@@ -61,16 +41,6 @@ fun HomeScreen(navController: NavController) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
                 Text("Bienvenido, ${user?.email ?: "Usuario"}", style = MaterialTheme.typography.titleLarge)
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Número de accesos: $accessCount", style = MaterialTheme.typography.bodyLarge)
-                Spacer(modifier = Modifier.height(8.dp))
-
-                if (lastAccessDate > 0) {
-                    Text("Último acceso: ${java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(java.util.Date(lastAccessDate))}")
-                } else {
-                    Text("Nunca has accedido antes.")
-                }
-
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(onClick = {
@@ -84,7 +54,7 @@ fun HomeScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = {
-                    // Mostrar el botón para hacer una consulta cuando el usuario esté autenticado
+                    // Redirigir a la pantalla de consulta
                     navController.navigate("consult")
                 }) {
                     Text("Realizar consulta")

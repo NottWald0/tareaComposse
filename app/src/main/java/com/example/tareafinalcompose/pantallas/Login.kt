@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -47,7 +48,7 @@ fun SignInScreen(navController: NavController) {
             ) {
                 TextField(value = email.value, onValueChange = { email.value = it }, label = { Text("Correo electrónico") })
                 Spacer(modifier = Modifier.padding(8.dp))
-                TextField(value = password.value, onValueChange = { password.value = it }, label = { Text("Contraseña") })
+                TextField(value = password.value, onValueChange = { password.value = it }, label = { Text("Contraseña") }, visualTransformation = PasswordVisualTransformation())
                 Spacer(modifier = Modifier.padding(8.dp))
 
                 // Mostrar mensaje de error si existe
