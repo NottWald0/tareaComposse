@@ -24,82 +24,93 @@ import androidx.navigation.NavController
 import com.example.tareafinalcompose.data.FirebaseAuthManager
 import kotlinx.coroutines.launch
 
+/**
+ * Pantalla de inicio de sesión donde los usuarios pueden ingresar sus credenciales
+ * (correo electrónico y contraseña) para acceder a la aplicación.
+ *
+ * @param navController Controlador de navegación para redirigir entre pantallas.
+ * @param onSignOut Función que se llama cuando el usuario cierra sesión.
+ */
 @Composable
 fun SignInScreen(navController: NavController, onSignOut: () -> Unit) {
-    val authManager = FirebaseAuthManager()
-    val firestoreManager = FirebaseFirestoreManager()
 
-    // Variables de estado para el email, contraseña y mensaje de error
-    val email = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val errorMessage = remember { mutableStateOf("") }
+    // Instanciación de los manejadores de autenticación y Firestore
+    val authManager = FirebaseAuthManager()  // Manejador de autenticación de Firebase para inicio de sesión
+    val firestoreManager = FirebaseFirestoreManager()  // Manejador de Firestore para gestionar los datos del usuario
 
-    // Scope de corrutinas para manejar tareas asincrónicas
-    val coroutineScope = rememberCoroutineScope()
+    // Variables de estado que almacenan los valores de los campos de correo y contraseña, y el mensaje de error
+    val email = remember { mutableStateOf("") }  // Correo electrónico ingresado por el usuario
+    val password = remember { mutableStateOf("") }  // Contraseña ingresada por el usuario
+    val errorMessage = remember { mutableStateOf("") }  // Mensaje de error en caso de fallar el inicio de sesión
 
+    // Creamos un scope de corrutinas para poder ejecutar tareas asíncronas y asi no bloqueamos el hilo principal
+    val coroutineScope = rememberCoroutineScope()  // Manejador de corrutinas para realizar operaciones asíncronas
+
+    // Definimos la pantalla con la estructura de Composables
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center  // Centra el contenido dentro del Box
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally  // Centra los elementos en la columna
             ) {
-                // Campo de entrada para el correo electrónico
+                // Campo para el correo electrónico
                 TextField(
                     value = email.value,
-                    onValueChange = { email.value = it },
-                    label = { Text("Correo electrónico") }
+                    onValueChange = { email.value = it },  // Actualiza el estado del correo con el texto ingresado
+                    label = { Text("Correo electrónico") }  // Etiqueta para el campo
                 )
-                Spacer(modifier = Modifier.padding(8.dp))
+                Spacer(modifier = Modifier.padding(8.dp))  // Espaciado entre los campos
 
-                // Campo de entrada para la contraseña
+                // Campo para la contraseña
                 TextField(
                     value = password.value,
-                    onValueChange = { password.value = it },
+                    onValueChange = { password.value = it },  // Actualiza el estado de la contraseña
                     label = { Text("Contraseña") },
-                    visualTransformation = PasswordVisualTransformation()
+                    visualTransformation = PasswordVisualTransformation()  // Oculta la contraseña mientras se escribe
                 )
-                Spacer(modifier = Modifier.padding(8.dp))
+                Spacer(modifier = Modifier.padding(8.dp))  // Espaciado entre los campos
 
-                // Mostrar mensaje de error si existe
+                // Si existe un mensaje de error, se muestra
                 if (errorMessage.value.isNotEmpty()) {
-                    Text(text = errorMessage.value, color = MaterialTheme.colorScheme.error)
+                    Text(text = errorMessage.value, color = MaterialTheme.colorScheme.error)  // Muestra el error con color rojo
                     Spacer(modifier = Modifier.padding(8.dp))
                 }
 
                 // Botón para iniciar sesión
                 Button(onClick = {
+                    // Llamada asíncrona para intentar iniciar sesión con las credenciales ingresadas
                     coroutineScope.launch {
-                        // Intentamos iniciar sesión con FirebaseAuthManager
                         val user = authManager.signInWithEmailAndPassword(email.value, password.value)
-                        if (user != null) {
-                            // Si el inicio de sesión es exitoso, actualizamos datos en Firestore
+                        if (user != null) {  // Si el inicio de sesión fue exitoso
+                            // Se actualiza el acceso del usuario en Firestore
                             val updated = firestoreManager.updateUserAccess(user.uid)
 
                             if (updated) {
-                                // Navegar a la pantalla principal si todo sale bien
+                                // Si la actualización fue exitosa, se navega a la pantalla principal
                                 navController.navigate("home")
                             } else {
-                                // Mostrar mensaje de error si falla la actualización
+                                // Si la actualización falla, se muestra un error
                                 errorMessage.value = "Error al actualizar los datos del usuario."
                             }
                         } else {
-                            // Mostrar mensaje de error si el inicio de sesión falla
+                            // Si el inicio de sesión falla, se muestra un mensaje de error
                             errorMessage.value = "Error al iniciar sesión. Intenta nuevamente."
                         }
                     }
                 }) {
-                    Text("Iniciar sesión")
+                    Text("Iniciar sesión")  // Texto que aparece en el botón
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))  // Espaciado entre los botones
 
-                // Botón para ir a la pantalla de registro
+                // Botón para navegar a la pantalla de registro
                 Button(onClick = {
+                    // Navega a la pantalla de registro
                     navController.navigate("register")
                 }) {
-                    Text("¿No tienes cuenta? Regístrate aquí")
+                    Text("¿No tienes cuenta? Regístrate aquí")  // Texto que aparece en el botón de registro
                 }
             }
         }

@@ -21,52 +21,66 @@ import com.example.tareafinalcompose.pantallas.HomeScreen
 import com.example.tareafinalcompose.pantallas.RegisterScreen // Importa RegisterScreen
 import com.example.tareafinalcompose.pantallas.SignInScreen
 
+/**
+ * Actividad principal de la aplicación. Gestiona la autenticación de usuario, la navegación
+ * entre las pantallas y la presentación de notificaciones periódicas si el usuario no ha realizado
+ * una consulta a la API.
+ *
+ * @param navController Controlador de navegación utilizado para redirigir entre las pantallas.
+ */
 class MainActivity : ComponentActivity() {
 
-    // Variable para verificar si el usuario realizó la consulta a la API
+    // Variable que indica si el usuario ha realizado la consulta a la API
     private var userHasConsulted by mutableStateOf(false)
 
-    // Handler para ejecutar el Runnable periódicamente
+    // Handler que maneja la ejecución periódica de tareas en el hilo principal
     private val handler = Handler(Looper.getMainLooper())
 
-    // Variable para almacenar la pantalla actual
+    // Variable que guarda el nombre de la pantalla actual
     private var currentScreen by mutableStateOf("home")
 
-    // Runnable que se encargará de mostrar las notificaciones periódicas
+    // Runnable que se ejecuta periódicamente para mostrar notificaciones si el usuario no ha consultado la API
     private val toastRunnable = object : Runnable {
         override fun run() {
-            // Mostrar la notificación solo si el usuario no ha consultado la API y si no está en la pantalla de inicio de sesión
+            // Solo muestra la notificación si el usuario no ha realizado la consulta y no está en la pantalla de inicio de sesión
             if (!userHasConsulted && currentScreen != "signin") {
-                showNotification()
+                showNotification() // Mostrar la notificación de recordatorio
 
-                // Volver a ejecutar el Runnable cada 500 ms
+                // Reejecutar el Runnable cada 500 ms
                 handler.postDelayed(this, 500)
             }
         }
     }
 
+    /**
+     * Función que se llama cuando la actividad es creada. Inicializa la pantalla de inicio
+     * y configura la navegación, mostrando una notificación al usuario.
+     *
+     * @param savedInstanceState Estado guardado de la actividad si está presente.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge() // Activar diseño de pantalla completa sin bordes
 
         setContent {
-            val navController = rememberNavController()
-            val authManager = FirebaseAuthManager()
+            val navController = rememberNavController() // Controlador de navegación
+            val authManager = FirebaseAuthManager() // Gestor de autenticación con Firebase
 
-            // Determinar la pantalla de inicio según el estado de autenticación del usuario
+            // Determinar la pantalla inicial según si el usuario está autenticado o no
             val startDestination = if (authManager.isUserLoggedIn()) "home" else "signin"
 
-            // Configuración de la navegación
+            // Configuración de la navegación entre las diferentes pantallas
             NavHost(navController = navController, startDestination = startDestination) {
                 composable("signin") {
-                    currentScreen = "signin"
+                    currentScreen = "signin" // Actualizar pantalla actual a inicio de sesión
                     SignInScreen(navController, onSignOut = { onSignOut(navController) })
                 }
 
                 composable("home") {
-                    currentScreen = "home"
-                    userHasConsulted = false
+                    currentScreen = "home" // Actualizar pantalla actual a inicio
+                    userHasConsulted = false // Restablecer estado de consulta
 
+                    // Pantalla principal de la aplicación
                     HomeScreen(
                         navController,
                         onSignOut = { onSignOut(navController) },
@@ -83,39 +97,39 @@ class MainActivity : ComponentActivity() {
                     DogScreen(navController, onConsultationDone = { onConsultationDone() })
                 }
 
-                // Ruta para la pantalla de registro
+                // Pantalla para el registro del usuario
                 composable("register") {
                     RegisterScreen(navController)
                 }
             }
         }
 
-        // Mostrar una notificación al iniciar la aplicación
+        // Mostrar notificación al iniciar la actividad
         showNotification()
     }
 
     /**
-     * Función para mostrar una notificación al usuario
+     * Muestra una notificación al usuario para recordarle realizar la consulta a la API.
      */
     private fun showNotification() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channelId = "reminder_channel"
+        val channelId = "reminder_channel" // Canal de notificación
 
-        // Crear el canal de notificación para Android 8.0 y superior
+        // Crear el canal de notificación si el dispositivo es Android 8.0 o superior
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Recordatorio de consulta",
-                NotificationManager.IMPORTANCE_DEFAULT
+                "Recordatorio de consulta", // Nombre del canal
+                NotificationManager.IMPORTANCE_HIGH
             )
-            notificationManager.createNotificationChannel(channel)
+            notificationManager.createNotificationChannel(channel) // Crear canal
         }
 
-        // Construcción de la notificación
+        // Crear la notificación con título y mensaje
         val notification = Notification.Builder(this, channelId)
             .setContentTitle("Recuerda consultar la API")
             .setContentText("¡No olvides consultar la API para más información!")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(android.R.drawable.ic_dialog_info) // Icono de la notificación
             .build()
 
         // Mostrar la notificación
@@ -123,7 +137,8 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Función que se ejecuta cuando el usuario ha realizado la consulta
+     * Función que se llama cuando el usuario ha realizado la consulta a la API.
+     * Detiene las notificaciones periódicas.
      */
     private fun onConsultationDone() {
         userHasConsulted = true
@@ -131,7 +146,10 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Función que maneja el cierre de sesión
+     * Función que maneja el cierre de sesión del usuario, deteniendo el Runnable
+     * y redirigiendo a la pantalla de inicio de sesión.
+     *
+     * @param navController Controlador de navegación para redirigir a la pantalla de inicio de sesión.
      */
     private fun onSignOut(navController: NavController) {
         handler.removeCallbacks(toastRunnable) // Detener el Runnable al cerrar sesión
@@ -143,8 +161,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Función que se llama cuando la actividad es destruida. Detiene el Runnable
+     * para evitar que continúe ejecutándose después de que la actividad se cierre.
+     */
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacks(toastRunnable) // Asegurar que el Runnable se detiene al destruir la actividad
+        handler.removeCallbacks(toastRunnable) // Asegurarse de que el Runnable se detiene
     }
 }

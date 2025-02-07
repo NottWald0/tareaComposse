@@ -20,6 +20,15 @@ import coil.compose.rememberImagePainter
 import com.example.tareafinalcompose.data.RetrofitInstance
 import kotlinx.coroutines.launch
 
+/**
+ * Pantalla que muestra una imagen aleatoria de un perro obtenida desde una API externa.
+ * La pantalla permite al usuario ver otro perro, regresar a la pantalla de inicio
+ * o cerrar la aplicación.
+ *
+ * @param navController Controlador de navegación para redirigir a la pantalla de inicio.
+ * @param onConsultationDone Función que se llama cuando se ha realizado la consulta
+ *        para obtener la imagen del perro.
+ */
 @Composable
 fun DogScreen(navController: NavController, onConsultationDone: () -> Unit) {
     // Crear un alcance de corrutinas para gestionar las tareas asíncronas
