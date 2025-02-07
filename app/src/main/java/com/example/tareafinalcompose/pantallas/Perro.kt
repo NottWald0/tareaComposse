@@ -1,6 +1,7 @@
 package com.example.tareafinalcompose.pantallas
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
@@ -21,60 +22,77 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DogScreen(navController: NavController, onConsultationDone: () -> Unit) {
+    // Crear un alcance de corrutinas para gestionar las tareas asíncronas
     val coroutineScope = rememberCoroutineScope()
+
+    // Estado para almacenar la URL de la imagen del perro
     val dogImageUrl = remember { mutableStateOf("") }
 
-    // Hacer la solicitud cuando la pantalla se carga
+    // Realizar la solicitud para obtener una imagen de perro cuando la pantalla se carga
     LaunchedEffect(true) {
         coroutineScope.launch {
             try {
+                // Hacer la solicitud a la API para obtener un perro aleatorio
                 val response = RetrofitInstance.dogApiService.getRandomDog()
                 if (response.isSuccessful) {
+                    // Si la respuesta es exitosa, asignar la URL de la imagen
                     dogImageUrl.value = response.body()?.firstOrNull()?.url ?: ""
-                    onConsultationDone()  // Marca que el usuario ha hecho la consulta cuando la imagen se carga
+                    // Marcar que la consulta fue realizada
+                    onConsultationDone()
                 }
             } catch (e: Exception) {
+                // Manejar cualquier error (por ejemplo, error de red)
                 dogImageUrl.value = ""
-                // Manejo de error
             }
         }
     }
 
+    // Estructura principal de la pantalla con una columna
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+        modifier = Modifier.fillMaxSize(), // Asegura que la columna ocupe toda la pantalla
+        horizontalAlignment = Alignment.CenterHorizontally, // Centrar horizontalmente
+        verticalArrangement = Arrangement.Center // Centrar verticalmente
     ) {
-        // Mostrar imagen del perro si hay una URL
+        // Mostrar la imagen del perro si la URL no está vacía
         if (dogImageUrl.value.isNotEmpty()) {
             Image(
-                painter = rememberImagePainter(dogImageUrl.value),
-                contentDescription = "Random Dog",
-                modifier = Modifier.wrapContentSize(),
-                contentScale = ContentScale.Crop
+                painter = rememberImagePainter(dogImageUrl.value), // Cargar la imagen desde la URL
+                contentDescription = "Random Dog", // Descripción de la imagen para accesibilidad
+                modifier = Modifier.wrapContentSize(), // Ajustar el tamaño de la imagen
+                contentScale = ContentScale.Crop // Recortar la imagen para ajustarla
             )
         } else {
+            // Mostrar un texto mientras se carga la imagen
             Text("Cargando perro...")
         }
 
+        // Botón para ver otro perro
         Button(onClick = {
-            // Recargar imagen al hacer clic
+            // Recargar una nueva imagen cuando el usuario hace clic
             coroutineScope.launch {
-                dogImageUrl.value = ""
+                dogImageUrl.value = "" // Limpiar la URL anterior
                 val response = RetrofitInstance.dogApiService.getRandomDog()
                 if (response.isSuccessful) {
+                    // Asignar la nueva imagen si la solicitud fue exitosa
                     dogImageUrl.value = response.body()?.firstOrNull()?.url ?: ""
                 }
             }
         }) {
-            Text("Ver otro perro")
+            Text("Ver otro perro") // Texto del botón
         }
 
-        // Botón para volver a la pantalla Home
+        // Botón para volver a la pantalla de inicio
         Button(onClick = {
             navController.navigate("home") // Navegar a la pantalla "Home"
         }) {
-            Text("Volver")
+            Text("Volver") // Texto del botón
+        }
+
+        // Botón para cerrar la aplicación
+        Button(onClick = {
+            System.exit(0) // Cierra la aplicación
+        }) {
+            Text("Cerrar aplicación") // Texto del botón
         }
     }
 }

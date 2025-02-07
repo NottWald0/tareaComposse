@@ -29,11 +29,12 @@ fun SignInScreen(navController: NavController, onSignOut: () -> Unit) {
     val authManager = FirebaseAuthManager()
     val firestoreManager = FirebaseFirestoreManager()
 
+    // Variables de estado para el email, contraseña y mensaje de error
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val errorMessage = remember { mutableStateOf("") }
 
-    // Coroutines scope para lanzar tareas dentro de un Composable
+    // Scope de corrutinas para manejar tareas asincrónicas
     val coroutineScope = rememberCoroutineScope()
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -44,9 +45,21 @@ fun SignInScreen(navController: NavController, onSignOut: () -> Unit) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextField(value = email.value, onValueChange = { email.value = it }, label = { Text("Correo electrónico") })
+                // Campo de entrada para el correo electrónico
+                TextField(
+                    value = email.value,
+                    onValueChange = { email.value = it },
+                    label = { Text("Correo electrónico") }
+                )
                 Spacer(modifier = Modifier.padding(8.dp))
-                TextField(value = password.value, onValueChange = { password.value = it }, label = { Text("Contraseña") }, visualTransformation = PasswordVisualTransformation())
+
+                // Campo de entrada para la contraseña
+                TextField(
+                    value = password.value,
+                    onValueChange = { password.value = it },
+                    label = { Text("Contraseña") },
+                    visualTransformation = PasswordVisualTransformation()
+                )
                 Spacer(modifier = Modifier.padding(8.dp))
 
                 // Mostrar mensaje de error si existe
@@ -55,23 +68,24 @@ fun SignInScreen(navController: NavController, onSignOut: () -> Unit) {
                     Spacer(modifier = Modifier.padding(8.dp))
                 }
 
+                // Botón para iniciar sesión
                 Button(onClick = {
                     coroutineScope.launch {
-                        // Intentamos iniciar sesión
+                        // Intentamos iniciar sesión con FirebaseAuthManager
                         val user = authManager.signInWithEmailAndPassword(email.value, password.value)
                         if (user != null) {
-                            // Si el inicio de sesión es exitoso, incrementamos el contador de accesos y actualizamos la fecha
+                            // Si el inicio de sesión es exitoso, actualizamos datos en Firestore
                             val updated = firestoreManager.updateUserAccess(user.uid)
 
                             if (updated) {
-                                // Navegar a la pantalla principal
+                                // Navegar a la pantalla principal si todo sale bien
                                 navController.navigate("home")
                             } else {
-                                // Si no se pudo actualizar, mostramos un error
+                                // Mostrar mensaje de error si falla la actualización
                                 errorMessage.value = "Error al actualizar los datos del usuario."
                             }
                         } else {
-                            // Si el inicio de sesión falla, mostramos un error
+                            // Mostrar mensaje de error si el inicio de sesión falla
                             errorMessage.value = "Error al iniciar sesión. Intenta nuevamente."
                         }
                     }
@@ -81,8 +95,8 @@ fun SignInScreen(navController: NavController, onSignOut: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Botón para ir a la pantalla de registro
                 Button(onClick = {
-                    // Navegar a la pantalla de registro si el usuario no tiene cuenta
                     navController.navigate("register")
                 }) {
                     Text("¿No tienes cuenta? Regístrate aquí")

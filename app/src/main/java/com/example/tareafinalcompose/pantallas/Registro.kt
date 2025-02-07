@@ -30,36 +30,44 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(navController: NavController) {
+
+    // Instancia de los manejadores de autenticación y firestore
     val authManager = FirebaseAuthManager()
     val firestoreManager = FirebaseFirestoreManager()
 
+    // Estados para almacenar los valores ingresados por el usuario
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val confirmPassword = remember { mutableStateOf("") }
     val errorMessage = remember { mutableStateOf("") }
     val isUserRegistered = remember { mutableStateOf(false) }
-
     val name = remember { mutableStateOf("") }
 
+    // Crear un alcance de corutina para ejecutar operaciones asíncronas
     val coroutineScope = rememberCoroutineScope()
 
+    // Navegar a la pantalla de inicio después de que el usuario esté registrado
     LaunchedEffect(isUserRegistered.value) {
         if (isUserRegistered.value) {
             navController.navigate("home")
         }
     }
 
+    // Función para registrar al usuario
     fun registerUser() {
+        // Verificar que todos los campos estén llenos
         if (email.value.isEmpty() || password.value.isEmpty() || confirmPassword.value.isEmpty() || name.value.isEmpty()) {
             errorMessage.value = "Todos los campos son obligatorios"
             return
         }
 
+        // Verificar que las contraseñas coincidan
         if (password.value != confirmPassword.value) {
             errorMessage.value = "Las contraseñas no coinciden"
             return
         }
 
+        // Intentar registrar al usuario de manera asíncrona
         coroutineScope.launch {
             val userId = authManager.registerUser(email.value, password.value)
             if (userId != null) {
@@ -71,24 +79,70 @@ fun RegisterScreen(navController: NavController) {
         }
     }
 
+    // Estructura de la pantalla de registro
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(16.dp)
             ) {
+                // Título de la pantalla
                 Text(text = "Registrarse", style = MaterialTheme.typography.headlineSmall)
-                TextField(value = name.value, onValueChange = { name.value = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth(), isError = name.value.isEmpty())
-                TextField(value = email.value, onValueChange = { email.value = it }, label = { Text("Correo electrónico") }, modifier = Modifier.fillMaxWidth(), isError = email.value.isEmpty())
+
+                // Campo para el nombre del usuario
+                TextField(
+                    value = name.value,
+                    onValueChange = { name.value = it },
+                    label = { Text("Nombre") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = name.value.isEmpty()
+                )
+
+                // Campo para el correo electrónico
+                TextField(
+                    value = email.value,
+                    onValueChange = { email.value = it },
+                    label = { Text("Correo electrónico") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = email.value.isEmpty()
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = password.value, onValueChange = { password.value = it }, label = { Text("Contraseña") }, modifier = Modifier.fillMaxWidth(), isError = password.value.isEmpty(), visualTransformation = PasswordVisualTransformation())
+
+                // Campo para la contraseña
+                TextField(
+                    value = password.value,
+                    onValueChange = { password.value = it },
+                    label = { Text("Contraseña") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = password.value.isEmpty(),
+                    visualTransformation = PasswordVisualTransformation()
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(value = confirmPassword.value, onValueChange = { confirmPassword.value = it }, label = { Text("Confirmar contraseña") }, modifier = Modifier.fillMaxWidth(), isError = confirmPassword.value.isEmpty(), visualTransformation = PasswordVisualTransformation())
+
+                // Campo para confirmar la contraseña
+                TextField(
+                    value = confirmPassword.value,
+                    onValueChange = { confirmPassword.value = it },
+                    label = { Text("Confirmar contraseña") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = confirmPassword.value.isEmpty(),
+                    visualTransformation = PasswordVisualTransformation()
+                )
+
+                // Mostrar mensaje de error si existe
                 if (errorMessage.value.isNotEmpty()) {
                     Text(text = errorMessage.value, color = MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
-                Button(onClick = { registerUser() }, modifier = Modifier.fillMaxWidth(), enabled = email.value.isNotEmpty() && password.value.isNotEmpty() && confirmPassword.value.isNotEmpty() && name.value.isNotEmpty()) {
+
+                // Botón de registro
+                Button(
+                    onClick = { registerUser() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = email.value.isNotEmpty() && password.value.isNotEmpty() && confirmPassword.value.isNotEmpty() && name.value.isNotEmpty()
+                ) {
                     Text("Registrar")
                 }
             }
@@ -96,6 +150,7 @@ fun RegisterScreen(navController: NavController) {
     }
 }
 
+// Vista previa para mostrar la pantalla en el entorno de desarrollo
 @Preview(showBackground = true)
 @Composable
 fun PreviewRegisterScreen() {

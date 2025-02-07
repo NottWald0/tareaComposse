@@ -15,56 +15,81 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 
 @Composable
-fun HomeScreen(navController: NavController, onSignOut: () -> Unit, onConsultationDone: () -> Unit) {
+fun HomeScreen(
+    navController: NavController,
+    onSignOut: () -> Unit,
+    onConsultationDone: () -> Unit
+) {
+    // Instancia del administrador de Firestore
     val firestoreManager = FirebaseFirestoreManager()
-    val user = firestoreManager.getCurrentUser() // Obtener usuario actual
 
-    var userHasConsulted by remember { mutableStateOf(false) } // Estado para controlar si el usuario ya consultó
+    // Obtener el usuario actual desde Firestore
+    val user = firestoreManager.getCurrentUser()
 
-    // Si el usuario no está autenticado, redirigir a la pantalla de registro
+    // Estado que indica si el usuario ya ha realizado una consulta
+    var userHasConsulted by remember { mutableStateOf(false) }
+
+    // Si el usuario no está autenticado, redirigirlo a la pantalla de inicio de sesión
     LaunchedEffect(user?.uid) {
         if (user == null) {
+            // Navegar a la pantalla de inicio de sesión
             navController.navigate("signIn") {
-                popUpTo("home") { inclusive = true } // Limpiar la pila de navegación para que no se pueda volver a la pantalla de inicio
+                popUpTo("home") { inclusive = true } // Limpiar la pila de navegación para no regresar a la pantalla de inicio
             }
         }
     }
 
+    // Layout principal de la pantalla con un Surface para establecer el fondo
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        // Caja para centrar el contenido
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(16.dp)) {
-                Text("Bienvenido, ${user?.email ?: "Usuario"}", style = MaterialTheme.typography.titleLarge)
-                Spacer(modifier = Modifier.height(24.dp))
 
+            // Columna que organiza los elementos verticalmente
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                // Mostrar el nombre o correo electrónico del usuario
+                Text("Bienvenido, ${user?.email ?: "Usuario"}", style = MaterialTheme.typography.titleLarge)
+
+                Spacer(modifier = Modifier.height(24.dp)) // Espacio entre los elementos
+
+                // Botón para cerrar sesión
                 Button(onClick = {
-                    // Cerrar sesión y redirigir a la pantalla de inicio de sesión
+                    // Cerrar sesión en Firestore
                     firestoreManager.signOut()
-                    onSignOut() // Ejecuta la función onSignOut pasada como parámetro
+                    // Llamar a la función onSignOut para realizar acciones adicionales (ej. mostrar pantalla de inicio)
+                    onSignOut()
+                    // Navegar a la pantalla de inicio de sesión y limpiar la pila de navegación
                     navController.navigate("signIn") {
-                        popUpTo("home") { inclusive = true } // Limpiar la pila de navegación para que no se pueda volver a la pantalla de inicio
+                        popUpTo("home") { inclusive = true }
                     }
                 }) {
-                    Text("Cerrar sesión")
+                    Text("Cerrar sesión") // Texto del botón
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp)) // Espacio entre los botones
 
+                // Botón para realizar una consulta
                 Button(onClick = {
                     // Redirigir a la pantalla de consulta (DogScreen)
                     navController.navigate("DogScreen")
-                    userHasConsulted = true // Cambiar el estado cuando se hace la consulta
+                    // Cambiar el estado indicando que el usuario ha realizado la consulta
+                    userHasConsulted = true
                 }) {
-                    Text("Realizar consulta")
+                    Text("Realizar consulta") // Texto del botón
                 }
             }
         }
     }
 
-    // Resetear el estado de consulta al regresar a Home
+    // Efecto para realizar acciones después de que el usuario haya regresado a la pantalla de inicio
     LaunchedEffect(navController.currentBackStackEntry) {
         if (userHasConsulted) {
-            onConsultationDone()  // Marca que la consulta fue realizada
+            // Ejecutar la función onConsultationDone para indicar que la consulta fue realizada
+            onConsultationDone()
         }
-        userHasConsulted = false // Resetear el estado después de la consulta
+        // Resetear el estado de la consulta
+        userHasConsulted = false
     }
 }
